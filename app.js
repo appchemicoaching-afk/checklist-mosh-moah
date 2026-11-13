@@ -1,4 +1,4 @@
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwkS0oj-FlwV05LcE_kyNP7xeepCHtIamG_7wCAbeqloopgqGJmBGgHraZvXGNmmut2/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwQrsnWlOg92brLbzX8dU0rLAg3M5SurIMdbKDzthn3TZOXTWGp63Tfk27f3R25DYOR/exec';
 const $ = id => document.getElementById(id);
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
