@@ -1,0 +1,9 @@
+{
+  "name": "Checklist MOSH y MOAH Uumbal",
+  "short_name": "MOSH MOAH",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1b5e20",
+  "icons": [{ "src": "icono.png", "sizes": "512x512", "type": "image/png" }]
+}

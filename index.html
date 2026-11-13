@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1b5e20">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono.png">
+<title>Checklist MOSH y MOAH</title>
+<style>
+ body{font-family:sans-serif;margin:0;background:#f4f6f4}
+ header{background:#1b5e20;color:#fff;padding:12px}
+ header small{display:block;opacity:.8}
+ main{padding:12px}
+ .card{background:#fff;border-radius:8px;padding:10px;margin:8px 0;box-shadow:0 1px 3px #0002}
+ .area{font-weight:bold;color:#1b5e20;margin-top:16px}
+ input,select,textarea,button{width:100%;padding:10px;margin:4px 0;font-size:16px;box-sizing:border-box}
+ button{background:#1b5e20;color:#fff;border:0;border-radius:6px}
+ .op{display:flex;gap:6px}.op button{background:#ccc;color:#000}
+ .op button.sel{background:#c62828;color:#fff}.op button.ok.sel{background:#2e7d32}
+ .extra{display:none}.fuga .extra{display:block}
+ #estado{font-size:14px;padding:6px;background:#fff3cd}
+ img.prev{max-width:100%;margin-top:4px}
+ .oculto{display:none}
+</style>
+</head>
+<body>
+<header>Checklist MOSH y MOAH<small>Uumbal · BP-PROD-FR-034 · v0</small></header>
+<div id="estado"></div>
+<main>
+ <section id="login" class="card">
+  <input id="usuario" placeholder="Usuario" autocapitalize="off">
+  <input id="pin" type="password" inputmode="numeric" placeholder="PIN">
+  <button id="btnLogin">Entrar</button>
+ </section>
+ <section id="form" class="oculto">
+  <div class="card">
+   <div id="bienvenida"></div>
+   <input id="fecha" type="date">
+   <input id="linea" placeholder="Línea">
+  </div>
+  <div id="lista"></div>
+  <div class="card"><textarea id="obs" placeholder="Observaciones generales"></textarea></div>
+  <button id="btnGuardar">Guardar inspección</button>
+  <button id="btnSync" style="background:#1565c0">Sincronizar ahora</button>
+  <button id="btnSalir" style="background:#777">Cerrar sesión</button>
+ </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
