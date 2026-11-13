@@ -18,7 +18,23 @@ let modoHist = 'tel';
 
 const medir = () => document.documentElement.style.setProperty('--alto', document.querySelector('.top').offsetHeight + 'px');
 addEventListener('resize', medir); addEventListener('load', medir); medir();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+const VERSION = '5';
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {});
+  // Cuando llega una versión nueva, recarga sola, salvo que haya una inspección a medias
+  let recargando = false;
+  const habiaVersion = !!navigator.serviceWorker.controller;   // en la primera instalación no recarga
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (recargando || !habiaVersion || !sesion) return;
+    if (Object.keys(resp).length) { toast('Hay una versión nueva. Se aplicará al guardar la inspección'); pendienteRecarga = true; return; }
+    recargando = true; location.reload();
+  });
+}
+let pendienteRecarga = false;
+// Pantalla de inicio: #tablero o #inspeccion en la dirección, o la última que se usó
+const VISTAS = { tablero: 'tab', inspeccion: 'nueva', historial: 'hist' };
+function vistaInicial() { return VISTAS[location.hash.slice(1)] || leer('vista', 'nueva'); }
+window.addEventListener('hashchange', () => { if (sesion && VISTAS[location.hash.slice(1)]) ver(VISTAS[location.hash.slice(1)]); });
 
 // ---------- Base local (IndexedDB) ----------
 function db() {
@@ -75,6 +91,7 @@ function ver(v) {
   $('btnYo').hidden = v === 'login';
   $('barraGuardar').hidden = v !== 'nueva';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('act', b.dataset.v === v));
+  if (v !== 'login') guardarLS('vista', v);
   if (v === 'hist') modoHistorial(modoHist);
   if (v === 'tab') cargarTablero();
   window.scrollTo(0, 0);
@@ -124,7 +141,7 @@ function iniciar() {
   $('btnYo').textContent = (sesion.nombre || '?').split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
   llenarDatalist();
   nuevaInspeccion();
-  ver('nueva');
+  ver(vistaInicial());
   sincronizar();
 }
 
@@ -258,6 +275,7 @@ $('btnGuardar').onclick = async () => {
   await guardarInsp(insp);
   toast('Inspección firmada y guardada');
   nuevaInspeccion();
+  if (pendienteRecarga) { location.hash = 'historial'; location.reload(); return; }
   ver('hist');
   sincronizar();
 };
@@ -515,7 +533,7 @@ async function cargarTablero() {
 $('btnTab').onclick = cargarTablero;
 
 function pintarTablero(d, cuando) {
-  $('tabAct').textContent = 'Actualizado: ' + cuando;
+  $('tabAct').textContent = 'Actualizado: ' + cuando + ', versión ' + VERSION;
   const k = d.kpi, u = d.ultima;
   const kpi = (v, l, cls) => `<div class="kpi ${cls || ''}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   const maxA = Math.max(1, ...d.porArea.map(a => a.n)), maxS = Math.max(1, ...d.semanas.map(s => s.n));

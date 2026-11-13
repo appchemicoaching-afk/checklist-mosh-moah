@@ -4,6 +4,12 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#1b5e20",
-  "icons": [{ "src": "icono.png", "sizes": "512x512", "type": "image/png" }]
+  "theme_color": "#123528",
+  "icons": [{ "src": "icono.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }],
+  "shortcuts": [
+    { "name": "Tablero", "short_name": "Tablero", "url": "./index.html#tablero",
+      "icons": [{ "src": "icono.png", "sizes": "512x512", "type": "image/png" }] },
+    { "name": "Nueva inspección", "short_name": "Inspección", "url": "./index.html#inspeccion",
+      "icons": [{ "src": "icono.png", "sizes": "512x512", "type": "image/png" }] }
+  ]
 }
