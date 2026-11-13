@@ -2,50 +2,223 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1b5e20">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icono.png">
+<link rel="apple-touch-icon" href="icono.png">
 <title>Checklist MOSH y MOAH</title>
 <style>
- body{font-family:sans-serif;margin:0;background:#f4f6f4}
- header{background:#1b5e20;color:#fff;padding:12px}
- header small{display:block;opacity:.8}
- main{padding:12px}
- .card{background:#fff;border-radius:8px;padding:10px;margin:8px 0;box-shadow:0 1px 3px #0002}
- .area{font-weight:bold;color:#1b5e20;margin-top:16px}
- input,select,textarea,button{width:100%;padding:10px;margin:4px 0;font-size:16px;box-sizing:border-box}
- button{background:#1b5e20;color:#fff;border:0;border-radius:6px}
- .op{display:flex;gap:6px}.op button{background:#ccc;color:#000}
- .op button.sel{background:#c62828;color:#fff}.op button.ok.sel{background:#2e7d32}
- .extra{display:none}.fuga .extra{display:block}
- #estado{font-size:14px;padding:6px;background:#fff3cd}
- img.prev{max-width:100%;margin-top:4px}
- .oculto{display:none}
+:root{
+  --verde:#14532d; --verde2:#166534; --acento:#16a34a; --acento-suave:#dcfce7;
+  --rojo:#dc2626; --rojo-suave:#fee2e2; --ambar:#b45309; --ambar-suave:#fef3c7;
+  --fondo:#eef2ef; --sup:#ffffff; --texto:#1c2420; --suave:#5f6b64; --linea:#dde3df;
+  --radio:14px; --sombra:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--fondo);color:var(--texto);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* Encabezado */
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--verde),var(--verde2));
+  color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:12px}
+.top img{width:38px;height:38px;border-radius:10px}
+.top .t{flex:1;min-width:0}
+.top b{display:block;font-size:17px;letter-spacing:.2px}
+.top small{opacity:.8;font-size:12px}
+.pill{font-size:12px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.18);white-space:nowrap}
+.pill.off{background:var(--ambar-suave);color:var(--ambar)}
+
+main{padding:12px 16px 150px;max-width:720px;margin:0 auto}
+.card{background:var(--sup);border-radius:var(--radio);padding:14px;margin:0 0 12px;box-shadow:var(--sombra)}
+h2{font-size:18px;margin:4px 0 12px}
+label.campo{display:block;font-size:13px;color:var(--suave);margin:8px 0 4px}
+input[type=text],input[type=password],input[type=date],select,textarea{
+  width:100%;padding:12px;border:1px solid var(--linea);border-radius:10px;background:#fbfcfb;min-height:48px}
+textarea{min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acento);border-color:transparent}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:block;width:100%;min-height:50px;border:0;border-radius:12px;font-weight:600;
+  background:var(--acento);color:#fff;cursor:pointer}
+.btn.sec{background:var(--sup);color:var(--verde);border:1.5px solid var(--acento)}
+.btn:active{transform:scale(.99)}
+
+/* Login */
+.login{margin-top:8vh;text-align:center}
+.login img{width:84px;height:84px;border-radius:22px;box-shadow:var(--sombra)}
+.login h1{font-size:22px;margin:14px 0 2px}
+.login p{color:var(--suave);margin:0 0 18px}
+.login .card{text-align:left}
+
+/* Progreso */
+.prog{position:sticky;top:calc(66px + env(safe-area-inset-top));z-index:10;padding:12px 14px}
+.prog .nums{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+.prog .nums b{font-size:15px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px}
+.chip.r{background:var(--rojo-suave);color:var(--rojo)}
+.chip.v{background:var(--acento-suave);color:var(--verde2)}
+.chip.a{background:var(--ambar-suave);color:var(--ambar)}
+.chip.g{background:#eef0ef;color:var(--suave)}
+.barra{height:8px;background:#e6ebe8;border-radius:99px;overflow:hidden}
+.barra i{display:block;height:100%;width:0;background:var(--acento);transition:width .25s}
+
+/* Áreas */
+details.area{background:var(--sup);border-radius:var(--radio);margin:0 0 10px;box-shadow:var(--sombra);overflow:hidden}
+details.area summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer;font-weight:600}
+details.area summary::-webkit-details-marker{display:none}
+details.area summary .n{flex:1}
+details.area summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--suave);border-bottom:2px solid var(--suave);
+  transform:rotate(45deg);margin:-4px 4px 0 6px;transition:transform .2s}
+details.area[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+details.area.completa summary .cuenta{background:var(--acento-suave);color:var(--verde2)}
+.area-body{padding:0 12px 12px}
+.mini{border:0;background:none;color:var(--verde2);font-weight:600;font-size:14px;padding:6px 2px 10px;cursor:pointer}
+
+/* Equipo */
+.eq{border:1px solid var(--linea);border-radius:12px;padding:12px;margin:0 0 8px;transition:border-color .2s,background .2s}
+.eq[data-estado="Sin fuga"]{border-color:#86efac;background:#f6fdf8}
+.eq[data-estado="Con fuga"]{border-color:#fca5a5;background:#fffafa}
+.eq-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.num{min-width:30px;height:30px;border-radius:8px;background:#eef0ef;color:var(--suave);font-size:13px;font-weight:700;
+  display:grid;place-items:center}
+.nom{font-weight:600}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{min-height:46px;border-radius:10px;border:1.5px solid var(--linea);background:#fff;font-weight:600;cursor:pointer;color:var(--suave)}
+.eq[data-estado="Sin fuga"] .b-ok{background:var(--acento);border-color:var(--acento);color:#fff}
+.eq[data-estado="Con fuga"] .b-fuga{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.extra{display:none;margin-top:6px}
+.eq[data-estado="Con fuga"] .extra{display:block}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 2px;font-weight:600}
+.switch input{appearance:none;width:48px;height:28px;border-radius:99px;background:#d6dbd8;position:relative;cursor:pointer;transition:background .2s;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked{background:var(--rojo)}
+.switch input:checked::after{left:23px}
+.foto{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:10px;border:1.5px dashed #b9c3bd;
+  border-radius:10px;color:var(--verde2);font-weight:600;cursor:pointer}
+.foto input{display:none}
+.prev{display:block;max-width:100%;border-radius:10px;margin-top:8px}
+
+/* Barra inferior */
+.accion{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:10px 16px;
+  background:linear-gradient(transparent,var(--fondo) 30%);z-index:15}
+.accion .btn{max-width:688px;margin:0 auto;box-shadow:0 4px 14px rgba(22,163,74,.35)}
+nav.nav{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--sup);border-top:1px solid var(--linea);
+  display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom)}
+nav.nav button{border:0;background:none;min-height:64px;font-size:12px;color:var(--suave);font-weight:600;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+nav.nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.nav button.act{color:var(--verde2)}
+
+/* Historial */
+.hist-item .cab{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hist-item .f{font-weight:700;font-size:16px}
+.hist-item .s{color:var(--suave);font-size:14px;margin:2px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.vacio{text-align:center;color:var(--suave);padding:40px 10px}
+
+#toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:#1c2420;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;transition:.25s;z-index:50;max-width:90vw}
+#toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Reporte (solo impresión / PDF) */
+#reporte{display:none}
+@page{size:A4 landscape;margin:9mm}
+@media print{
+  body{background:#fff}
+  body>*:not(#reporte){display:none!important}
+  #reporte{display:block;font:9px/1.25 Arial,sans-serif;color:#000}
+  #reporte table{width:100%;border-collapse:collapse}
+  #reporte td,#reporte th{border:1px solid #000;padding:3px 4px;vertical-align:middle}
+  #reporte th{background:#d9ead3;font-weight:bold;text-align:center}
+  #reporte tr{page-break-inside:avoid}
+  #reporte .enc td{font-size:11px}
+  #reporte .enc .logo{width:16%;text-align:center;font-size:18px;font-weight:bold;color:#14532d}
+  #reporte .enc .tit{text-align:center;font-size:16px;font-weight:bold}
+  #reporte .enc .k{width:9%;font-weight:bold}
+  #reporte .enc .v{width:12%}
+  #reporte .meta{margin:6px 0;font-size:11px}
+  #reporte .meta span{display:inline-block;margin-right:28px}
+  #reporte .c{text-align:center;font-weight:bold}
+  #reporte .fuga td{background:#fde2e2}
+  #reporte td.area{background:#fff}
+  #reporte h3{font-size:11px;margin:10px 0 4px}
+  #reporte .res span{display:inline-block;margin-right:24px;font-size:11px}
+  #reporte .fotos{display:flex;flex-wrap:wrap;gap:8px}
+  #reporte .fotos figure{margin:0;width:31%;page-break-inside:avoid}
+  #reporte .fotos img{width:100%;max-height:60mm;object-fit:contain;border:1px solid #999}
+  #reporte .fotos figcaption{font-size:9px}
+  #reporte .firmas{display:flex;gap:40px;margin-top:30px;page-break-inside:avoid}
+  #reporte .firmas div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px;font-size:10px}
+}
 </style>
 </head>
 <body>
-<header>Checklist MOSH y MOAH<small>Uumbal · BP-PROD-FR-034 · v0</small></header>
-<div id="estado"></div>
+<header class="top">
+  <img src="icono.png" alt="">
+  <div class="t"><b>Checklist MOSH y MOAH</b><small>Uumbal · BP-PROD-FR-034 · v0</small></div>
+  <span id="pill" class="pill">…</span>
+</header>
+
 <main>
- <section id="login" class="card">
-  <input id="usuario" placeholder="Usuario" autocapitalize="off">
-  <input id="pin" type="password" inputmode="numeric" placeholder="PIN">
-  <button id="btnLogin">Entrar</button>
- </section>
- <section id="form" class="oculto">
-  <div class="card">
-   <div id="bienvenida"></div>
-   <input id="fecha" type="date">
-   <input id="linea" placeholder="Línea">
-  </div>
-  <div id="lista"></div>
-  <div class="card"><textarea id="obs" placeholder="Observaciones generales"></textarea></div>
-  <button id="btnGuardar">Guardar inspección</button>
-  <button id="btnSync" style="background:#1565c0">Sincronizar ahora</button>
-  <button id="btnSalir" style="background:#777">Cerrar sesión</button>
- </section>
+  <!-- Login -->
+  <section id="vLogin" class="login">
+    <img src="icono.png" alt="">
+    <h1>Bienvenido</h1>
+    <p>Inspección de fugas de aceite mineral</p>
+    <div class="card">
+      <label class="campo" for="usuario">Usuario</label>
+      <input id="usuario" type="text" autocapitalize="off" autocomplete="username">
+      <label class="campo" for="pin">PIN</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password">
+      <div style="height:14px"></div>
+      <button id="btnLogin" class="btn">Entrar</button>
+    </div>
+  </section>
+
+  <!-- Nueva inspección -->
+  <section id="vNueva" hidden>
+    <div class="card">
+      <h2>Nueva inspección</h2>
+      <div id="bienvenida" class="chip v"></div>
+      <div class="fila">
+        <div><label class="campo" for="fecha">Fecha</label><input id="fecha" type="date"></div>
+        <div><label class="campo" for="linea">Línea</label><input id="linea" type="text" placeholder="Ej. 1"></div>
+      </div>
+    </div>
+    <div class="card prog">
+      <div class="nums"><span><b id="txtRev">0</b> de <span id="txtTot">0</span> revisados</span><span id="txtFugas" class="chip g">0 con fuga</span></div>
+      <div class="barra"><i id="barra"></i></div>
+    </div>
+    <div id="lista"></div>
+    <div class="card">
+      <label class="campo" for="obs">Observaciones generales</label>
+      <textarea id="obs"></textarea>
+    </div>
+  </section>
+
+  <!-- Historial -->
+  <section id="vHist" hidden>
+    <div class="card">
+      <h2>Inspecciones guardadas</h2>
+      <p style="margin:0 0 12px;color:var(--suave);font-size:14px">Descarga cualquier inspección en PDF, con o sin señal.</p>
+      <button id="btnSync" class="btn sec">Sincronizar ahora</button>
+    </div>
+    <div id="historial"></div>
+  </section>
 </main>
+
+<div class="accion" id="barraGuardar" hidden><button id="btnGuardar" class="btn">Guardar inspección</button></div>
+
+<nav class="nav" id="nav" hidden>
+  <button data-v="nueva" class="act"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Inspección</button>
+  <button data-v="hist"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Historial</button>
+  <button data-v="salir"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Salir</button>
+</nav>
+
+<div id="toast"></div>
+<div id="reporte"></div>
 <script src="app.js"></script>
 </body>
 </html>
