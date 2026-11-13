@@ -515,17 +515,22 @@ function htmlReporte(i) {
 }
 
 // ---------- Tablero ----------
+const tableroValido = d => d && d.ok && d.kpi && Array.isArray(d.porArea) && Array.isArray(d.semanas);
 async function cargarTablero() {
-  const cache = leer('tablero', null);
-  if (cache) pintarTablero(cache.datos, cache.cuando);
-  else $('tablero').innerHTML = '<div class="vacio">Cargando indicadores…</div>';
+  let cache = leer('tablero', null);
+  if (cache && !tableroValido(cache.datos)) { localStorage.removeItem('tablero'); cache = null; }   // descarta datos guardados dañados
+  if (cache) { try { pintarTablero(cache.datos, cache.cuando); } catch (e) { cache = null; } }
+  if (!cache) $('tablero').innerHTML = '<div class="vacio">Cargando indicadores…</div>';
   if (!navigator.onLine) {
     if (!cache) $('tablero').innerHTML = '<div class="vacio">Conéctate a internet para ver el tablero la primera vez.</div>';
     return;
   }
   try {
-    const d = await (await fetch(URL_SCRIPT + '?vista=tablero')).json();
-    if (!d.ok) throw new Error();
+    const d = await (await fetch(URL_SCRIPT + '?vista=tablero', { cache: 'no-store' })).json();
+    if (!tableroValido(d)) {
+      $('tablero').innerHTML = '<div class="vacio">El script publicado todavía no tiene el tablero. En Apps Script publica la versión más reciente con Gestionar implementaciones, Nueva versión.</div>';
+      return;
+    }
     guardarLS('tablero', { datos: d, cuando: ahora() });
     pintarTablero(d, ahora());
   } catch (e) { if (!cache) $('tablero').innerHTML = '<div class="vacio">No se pudo cargar el tablero. Toca Actualizar para reintentar.</div>'; }
