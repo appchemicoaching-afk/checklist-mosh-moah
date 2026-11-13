@@ -57,6 +57,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--palma);outline-o
 .btn.peq{min-height:40px;font-size:14px;width:auto;padding:0 14px}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btns .btn{flex:1}
+.hi .btns .btn:last-child{flex-basis:100%}
 .etq{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:#eef1ef;color:var(--suave)}
 .etq.f{background:var(--fuga-t);color:var(--fuga)}
 .etq.ok{background:var(--palma-t);color:var(--palma)}
@@ -136,6 +137,10 @@ nav.nav button.act::before{content:"";position:absolute;top:0;left:30%;right:30%
 .firmas div{border:1px solid var(--linea);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--suave);line-height:1.3}
 .firmas div b{display:block;color:var(--texto);font-size:12px;font-weight:600}
 .firmas div.si{border-color:#a9cdb9;background:#f3f9f5}
+.seg2{display:grid;grid-template-columns:1fr 1fr;border:1px solid #c6d0ca;border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg2 button{border:0;background:#fff;min-height:42px;font-weight:600;font-size:14px;color:var(--suave)}
+.seg2 button+button{border-left:1px solid #c6d0ca}
+.seg2 button.act{background:var(--tinta);color:#fff}
 .vacio{text-align:center;color:var(--suave);padding:36px 12px}
 
 /* Tablero */
@@ -267,10 +272,12 @@ nav.nav button.act::before{content:"";position:absolute;top:0;left:30%;right:30%
   <section id="vHist" hidden>
     <div class="panel pad">
       <h2>Historial</h2>
-      <p class="nota" style="margin-bottom:12px">Firma y descarga en PDF cualquier inspección, con o sin señal.</p>
+      <p class="nota" style="margin-bottom:12px" id="hNota">Inspecciones guardadas en este teléfono. Funcionan sin señal.</p>
+      <div class="seg2" role="tablist"><button id="hTel" class="act" role="tab">En este teléfono</button><button id="hTodas" role="tab">Todas</button></div>
       <button id="btnSync" class="btn sec">Sincronizar ahora</button>
     </div>
     <div id="historial"></div>
+    <div id="historialSrv" hidden></div>
   </section>
 
   <section id="vTab" hidden>

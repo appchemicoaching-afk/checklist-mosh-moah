@@ -1,4 +1,4 @@
-const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwQrsnWlOg92brLbzX8dU0rLAg3M5SurIMdbKDzthn3TZOXTWGp63Tfk27f3R25DYOR/exec';
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbyDNrpOLQyYc0oJSdiv2Nj2Z9X7uz8Bqz5wAu_WZGF-x2CSi_B7uaY_Bbd5P8lUmwjV/exec';
 const $ = id => document.getElementById(id);
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
@@ -14,6 +14,7 @@ let responsables = leer('responsables', []);
 let sesion = leer('sesion', null);
 let areas = [];
 let resp = {};
+let modoHist = 'tel';
 
 const medir = () => document.documentElement.style.setProperty('--alto', document.querySelector('.top').offsetHeight + 'px');
 addEventListener('resize', medir); addEventListener('load', medir); medir();
@@ -74,7 +75,7 @@ function ver(v) {
   $('btnYo').hidden = v === 'login';
   $('barraGuardar').hidden = v !== 'nueva';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('act', b.dataset.v === v));
-  if (v === 'hist') pintarHistorial();
+  if (v === 'hist') modoHistorial(modoHist);
   if (v === 'tab') cargarTablero();
   window.scrollTo(0, 0);
 }
@@ -293,8 +294,7 @@ function pedirFirma(titulo, nombre, editable) {
 
 async function firmarRol(id, rol) {
   const i = await unaInsp(id); if (!i) return;
-  const titulo = rol === 'responsable' ? 'Firma del responsable de área' : 'Firma del jefe de producción';
-  const f = await pedirFirma(titulo, '', true);
+  const f = await pedirFirma(tituloRol(rol), '', true);
   if (!f) return;
   i.firmas = i.firmas || {};
   i.firmas[rol] = f;
@@ -336,9 +336,81 @@ async function pintarHistorial() {
   }).join('');
 }
 
+
+// ---------- Historial compartido (todas las inspecciones) ----------
+const tituloRol = rol => rol === 'responsable' ? 'Firma del responsable de área' : 'Firma del jefe de producción';
+function modoHistorial(m) {
+  modoHist = m;
+  $('hTel').classList.toggle('act', m === 'tel'); $('hTodas').classList.toggle('act', m === 'todas');
+  $('historial').hidden = m !== 'tel'; $('historialSrv').hidden = m !== 'todas'; $('btnSync').hidden = m !== 'tel';
+  $('hNota').textContent = m === 'tel' ? 'Inspecciones guardadas en este teléfono. Funcionan sin señal.'
+    : 'Inspecciones de todos los inspectores. Para descargar o firmar necesitas señal.';
+  if (m === 'todas') pintarServidor(); else pintarHistorial();
+}
+$('hTel').onclick = () => modoHistorial('tel');
+$('hTodas').onclick = () => modoHistorial('todas');
+
+async function pintarServidor() {
+  const cache = leer('histSrv', null), caja = $('historialSrv');
+  if (cache) renderServidor(cache.lista, cache.cuando); else caja.innerHTML = '<div class="vacio">Cargando inspecciones…</div>';
+  if (!navigator.onLine) {
+    if (!cache) caja.innerHTML = '<div class="vacio">Conéctate a internet para ver las inspecciones de todos.</div>';
+    return;
+  }
+  try {
+    const r = await post(Object.assign({ accion: 'historial' }, cred()));
+    if (!r.ok) throw new Error(r.error);
+    guardarLS('histSrv', { lista: r.lista, cuando: ahora() });
+    renderServidor(r.lista, ahora());
+  } catch (e) { if (!cache) caja.innerHTML = '<div class="vacio">No se pudieron cargar las inspecciones. Revisa tu señal e intenta de nuevo.</div>'; }
+}
+
+function renderServidor(l, cuando) {
+  if (!l.length) { $('historialSrv').innerHTML = '<div class="vacio">Todavía no hay inspecciones registradas en la hoja.</div>'; return; }
+  const caja = (ok, txt, nom) => `<div class="${ok ? 'si' : ''}"><b>${txt}</b>${ok ? esc(nom) : 'Pendiente'}</div>`;
+  $('historialSrv').innerHTML = `<p class="nota" style="margin:0 0 8px 2px">Actualizado: ${cuando}</p>` + l.map(i => `<div class="panel hi">
+      <div class="cab"><div><div class="f">${fmt(i.fecha)}, ${esc(i.dia)}</div>
+        <div class="s">Línea ${esc(i.linea || 'sin especificar')}. Inspector: ${esc(i.inspector)}</div></div></div>
+      <div class="chips"><span class="etq">${i.revisados} revisados</span>
+        <span class="etq ${i.fugas ? 'f' : 'ok'}">${i.fugas ? i.fugas + (i.fugas > 1 ? ' fugas' : ' fuga') : 'Sin fugas'}</span>${i.derrames ? `<span class="etq f">${i.derrames} con derrame</span>` : ''}</div>
+      <div class="firmas">${caja(i.firmaInspector, 'Inspector', i.inspector)}${caja(!!i.responsable, 'Resp. de área', i.responsable)}${caja(!!i.jefe, 'Jefe de producción', i.jefe)}</div>
+      <div class="btns">
+        ${!i.responsable ? `<button class="btn sec peq" onclick="firmarServidor('${esc(i.id)}','responsable')">Firma responsable</button>` : ''}
+        ${!i.jefe ? `<button class="btn sec peq" onclick="firmarServidor('${esc(i.id)}','jefe')">Firma jefe</button>` : ''}
+        <button class="btn peq" onclick="pdfServidor('${esc(i.id)}')">Descargar PDF</button>
+      </div></div>`).join('');
+}
+
+async function pdfServidor(id) {
+  if (!navigator.onLine) return toast('Necesitas señal para descargar esta inspección');
+  toast('Preparando el PDF…');
+  try {
+    const r = await post(Object.assign({ accion: 'detalle', id }, cred()));
+    if (!r.ok) return toast(r.error || 'No se encontró la inspección');
+    imprimir(r.inspeccion);
+  } catch (e) { toast('No se pudo conectar con el servidor'); }
+}
+
+async function firmarServidor(id, rol) {
+  if (!navigator.onLine) return toast('Necesitas señal para firmar esta inspección');
+  const f = await pedirFirma(tituloRol(rol), '', true);
+  if (!f) return;
+  try {
+    const r = await post(Object.assign({ accion: 'firmas', id, firmas: { [rol]: f } }, cred()));
+    if (!r.ok) return toast(r.error || 'No se pudo guardar la firma');
+    const loc = await unaInsp(id);
+    if (loc) { loc.firmas = loc.firmas || {}; if (!loc.firmas[rol]) { loc.firmas[rol] = f; await guardarInsp(loc); } }
+    toast('Firma guardada');
+    pintarServidor();
+  } catch (e) { toast('No se pudo conectar con el servidor'); }
+}
+
 // ---------- PDF ----------
 async function descargarPDF(id) {
   const i = await unaInsp(id); if (!i) return;
+  imprimir(i);
+}
+function imprimir(i) {
   $('reporte').innerHTML = htmlReporte(i);
   const titulo = document.title;
   document.title = 'BP-PROD-FR-034 ' + i.fecha + (i.linea ? ' Linea ' + i.linea : '');
