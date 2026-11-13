@@ -1,4 +1,4 @@
-const CACHE = 'mosh-moah-v3';
+const CACHE = 'mosh-moah-v4';
 const ARCHIVOS = ['./', './index.html', './app.js', './manifest.json', './icono.png'];
 
 self.addEventListener('install', e => {
